@@ -1,7 +1,7 @@
 // Project: amzone-api-scraper :: Created Date: 2023-10-01 
 
 import express from 'express';
-import productRoutes from './routes/productRoutes.js';
+import productRoutes from './routes/productRoutes.js'; // Ensure this import is present
 import cors from 'cors';
 import { config } from './config/config.js'; // import the config object from the config.js file
 import swaggerUi from 'swagger-ui-express';
