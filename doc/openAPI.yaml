@@ -1,0 +1,348 @@
+openapi: 3.0.0
+info:
+  title: Amazon Product Search API
+  version: 1.0.0
+  description: |
+    واجهة برمجة تطبيقات للبحث عن منتجات أمازون مع إمكانية التصفية المتقدمة.
+    - البحث بالكلمات المفتاحية
+    - تصفية حسب السعر، التقييم، Prime، Amazon Choice، Best Seller
+    - عرض النتائج مع التفاصيل الكاملة للمنتجات
+
+servers:
+  - url: https://localhost:3000/api
+    description: خادم التطوير
+  - url: https://api.example.com/v1
+    description: خادم الإنتاج
+
+paths:
+  /search/{keyword}:
+    get:
+      tags:
+        - Search
+      summary: البحث عن منتجات بكلمة مفتاحية
+      description: |
+        البحث عن المنتجات باستخدام كلمة مفتاحية مع إمكانية التصفية حسب:
+        - نطاق السعر (minPrice, maxPrice)
+        - الحد الأدنى للتقييم (rating)
+        - منتجات Prime فقط
+        - ماركة محددة
+        - منتجات Amazon Choice
+        - منتجات Best Seller
+        - المنتجات المعروضة للبيع
+        - الحد الأدنى لنسبة الخصم
+      operationId: searchProducts
+      parameters:
+        - $ref: '#/components/parameters/keyword'
+        - $ref: '#/components/parameters/domain'
+        - $ref: '#/components/parameters/minPrice'
+        - $ref: '#/components/parameters/maxPrice'
+        - $ref: '#/components/parameters/rating'
+        - $ref: '#/components/parameters/prime'
+        - $ref: '#/components/parameters/brand'
+        - $ref: '#/components/parameters/amazonChoice'
+        - $ref: '#/components/parameters/bestSeller'
+        - $ref: '#/components/parameters/onsale'
+        - $ref: '#/components/parameters/minDiscount'
+      responses:
+        '200':
+          description: قائمة بالمنتجات المطابقة
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResults'
+              examples:
+                PhoneSearchExample:
+                  value:
+                    results:
+                      - asin: "B0CTW8TXGH"
+                        name: "Tracfone Motorola Moto g Play 2024"
+                        price: 39.88
+                        original_price: 49.99
+                        discountPercentage: 20
+                        isOnSale: true
+                        stars: 4.3
+                        total_reviews: 577
+                      - asin: "B0CRSLXF34"
+                        name: "SAMSUNG Galaxy A05"
+                        price: 97.43
+                        original_price: null
+                        discountPercentage: 0
+                        isOnSale: false
+                        stars: 3.9
+                        total_reviews: 470
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: وصف الخطأ
+          example: "Invalid price range (minPrice cannot be greater than maxPrice)"
+        code:
+          type: integer
+          description: رمز حالة HTTP
+          example: 400
+    SearchProduct:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [search_product]
+          description: نوع النتيجة
+          example: "search_product"
+        position:
+          type: integer
+          description: ترتيب المنتج في نتائج البحث
+          example: 1
+        asin:
+          type: string
+          description: رقم ASIN الفريد للمنتج
+          example: "B0CTW8TXGH"
+        name:
+          type: string
+          description: اسم المنتج
+          example: "Tracfone Motorola Moto g Play 2024"
+        image:
+          type: string
+          format: uri
+          description: رابط صورة المنتج الرئيسية
+          example: "https://m.media-amazon.com/images/I/71CxUvG46rL.jpg"
+        has_prime:
+          type: boolean
+          description: هل المنتج متوفر بخدمة Prime؟
+          example: true
+        is_best_seller:
+          type: boolean
+          description: هل المنتج من الأكثر مبيعاً؟
+          example: false
+        is_amazon_choice:
+          type: boolean
+          description: هل المنتج من اختيار أمازون؟
+          example: false
+        is_limited_deal:
+          type: boolean
+          description: هل المنتج في عرض محدود؟
+          example: false
+        purchase_history_message:
+          type: string
+          description: معلومات عن معدل الشراء
+          example: "6K+ bought in past month"
+        stars:
+          type: number
+          minimum: 0
+          maximum: 5
+          description: متوسط التقييم
+          example: 4.3
+        total_reviews:
+          type: integer
+          description: عدد التقييمات الكلي
+          example: 577
+        url:
+          type: string
+          format: uri
+          description: رابط صفحة المنتج على أمازون
+          example: "https://www.amazon.com/Tracfone-Motorola-5000mAh-Battery-Sapphire/dp/B0CTW8TXGH"
+        spec:
+          type: object
+          description: المواصفات الفنية للمنتج
+        price_string:
+          type: string
+          description: السعر كسلسلة نصية
+          example: "$39.88"
+        price_symbol:
+          type: string
+          description: رمز العملة
+          example: "$"
+        price:
+          type: number
+          format: float
+          minimum: 0
+          description: السعر الحالي
+          example: 39.88
+        original_price:
+          type: number
+          format: float
+          nullable: true
+          minimum: 0
+          description: السعر الأصلي قبل الخصم
+          example: 49.99
+        discountPercentage:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+          description: نسبة الخصم المئوية
+          example: 20
+        isOnSale:
+          type: boolean
+          description: هل المنتج معروض للبيع حالياً؟
+          example: true
+
+    SearchResults:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SearchProduct'
+
+  parameters:
+    keyword:
+      name: keyword
+      in: path
+      required: true
+      description: كلمة البحث الأساسية
+      schema:
+        type: string
+      example: "phone"
+
+    domain:
+      name: domain
+      in: query
+      description: نطاق أمازون الجغرافي
+      schema:
+        type: string
+        enum: [com, ae, sa, eg, uk, de, fr]
+        default: "com"
+      example: "com"
+
+    minPrice:
+      name: minPrice
+      in: query
+      description: الحد الأدنى للسعر
+      schema:
+        type: number
+        format: float
+        minimum: 0
+        default: 0
+      example: 50
+
+    maxPrice:
+      name: maxPrice
+      in: query
+      description: الحد الأقصى للسعر
+      schema:
+        type: number
+        format: float
+        minimum: 0
+        default: 1000
+      example: 500
+
+    rating:
+      name: rating
+      in: query
+      description: الحد الأدنى لتقييم المنتج (1-5)
+      schema:
+        type: number
+        format: float
+        minimum: 0
+        maximum: 5
+        default: 0
+      example: 4
+
+    prime:
+      name: prime
+      in: query
+      description: تصفية المنتجات Prime فقط
+      schema:
+        type: boolean
+        default: false
+      example: true
+
+    brand:
+      name: brand
+      in: query
+      description: تصفية حسب الماركة
+      schema:
+        type: string
+      example: "Samsung"
+
+    amazonChoice:
+      name: amazonChoice
+      in: query
+      description: تصفية منتجات Amazon Choice فقط
+      schema:
+        type: boolean
+        default: false
+      example: true
+
+    bestSeller:
+      name: bestSeller
+      in: query
+      description: تصفية منتجات Best Seller فقط
+      schema:
+        type: boolean
+        default: false
+      example: false
+
+    onsale:
+      name: onsale
+      in: query
+      description: تصفية المنتجات المعروضة للبيع فقط
+      schema:
+        type: boolean
+        default: false
+      example: true
+
+    minDiscount:
+      name: minDiscount
+      in: query
+      description: الحد الأدنى لنسبة الخصم (0-100)
+      schema:
+        type: number
+        format: float
+        minimum: 0
+        maximum: 100
+        default: 0
+      example: 10
+
+  responses:
+    BadRequest:
+      description: طلب غير صالح
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            InvalidPriceRange:
+              value:
+                error: "Invalid price range (minPrice cannot be greater than maxPrice)"
+                code: 400
+
+    NotFound:
+      description: لم يتم العثور على منتجات مطابقة
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            NoProductsFound:
+              value:
+                error: "No products found matching your criteria"
+                code: 404
+
+    ServerError:
+      description: خطأ في الخادم الداخلي
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            ScraperAPIError:
+              value:
+                error: "Failed to fetch data from Amazon"
+                code: 500
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
