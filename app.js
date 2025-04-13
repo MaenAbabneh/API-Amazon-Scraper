@@ -20,7 +20,9 @@ app.use(express.json());
 app.use('/ping', pingRoutes); 
 app.use('/api', productRoutes);
 
-
+app.get('/', (req, res) => {
+  res.send('Welcome to the Amzone API Scraper!');
+}); 
 
 app.listen(config.port, () => {
   console.log(`Server is running on port ${config.port}`);
