@@ -1,4 +1,4 @@
-import { getProduct } from "./product/getProduct.js"; // import the getProduct function from the product/getProduct module
+import { getProduct } from "./product/getProduct.js"; // Ensure correct case for the filename
 
 import { searchProduct } from "./product/searchProduct.js"; // import the searchProduct function from the productController module
 
