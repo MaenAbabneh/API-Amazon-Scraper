@@ -4,9 +4,6 @@ import { getProduct , searchProduct} from '../controllers/productController.js';
 
 const router = express.Router(); // create a new router object
 
-router.get('/', (req, res) => {
-    res.status(200).json({ status: 'ok', message: 'API is up and running 🚀' });
-  });
 
 router.get('/products/:asin', getProduct); // define a route for getting product data by product ID
 
