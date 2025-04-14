@@ -15,7 +15,7 @@ servers:
     description: خادم الإنتاج
 
 paths:
-  /products/{asin}:
+  /api/products/{asin}:
     get:
       tags:
         - Products
@@ -58,7 +58,7 @@ paths:
                     original_price: 49.99
                     discountPercentage: 20
                     isOnSale: true
-  /search/{keyword}:
+  /api/search/{keyword}:
     get:
       tags:
         - Search
