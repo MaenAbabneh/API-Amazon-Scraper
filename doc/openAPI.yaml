@@ -15,6 +15,49 @@ servers:
     description: خادم الإنتاج
 
 paths:
+  /products/{asin}:
+    get:
+      tags:
+        - Products
+      summary: الحصول على تفاصيل منتج معين
+      description: |
+        استرجاع تفاصيل منتج معين باستخدام رقم ASIN.
+        - معلومات المنتج
+        - تقييمات وآراء المستخدمين
+        - معلومات الشحن والتوافر
+      operationId: getProductDetails
+      parameters:
+        - $ref: '#/components/parameters/asin'
+      responses:
+        200:
+          description: تفاصيل المنتج
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchProduct'
+              examples:
+                ProductDetailsExample:
+                  value:
+                    type: "search_product"
+                    position: 1
+                    asin: "B0CTW8TXGH"
+                    name: "Tracfone Motorola Moto g Play 2024"
+                    image: "https://m.media-amazon.com/images/I/71CxUvG46rL.jpg"
+                    has_prime: true
+                    is_best_seller: false
+                    is_amazon_choice: false
+                    is_limited_deal: false
+                    purchase_history_message: "6K+ bought in past month"
+                    stars: 4.3
+                    total_reviews: 577
+                    url: "https://www.amazon.com/Tracfone-Motorola-5000mAh-Battery-Sapphire/dp/B0CTW8TXGH"
+                    spec: {}
+                    price_string: "$39.88"
+                    price_symbol: "$"
+                    price: 39.88
+                    original_price: 49.99
+                    discountPercentage: 20
+                    isOnSale: true
   /search/{keyword}:
     get:
       tags:
@@ -32,17 +75,7 @@ paths:
         - الحد الأدنى لنسبة الخصم
       operationId: searchProducts
       parameters:
-        - $ref: '#/components/parameters/keyword'
         - $ref: '#/components/parameters/domain'
-        - $ref: '#/components/parameters/minPrice'
-        - $ref: '#/components/parameters/maxPrice'
-        - $ref: '#/components/parameters/rating'
-        - $ref: '#/components/parameters/prime'
-        - $ref: '#/components/parameters/brand'
-        - $ref: '#/components/parameters/amazonChoice'
-        - $ref: '#/components/parameters/bestSeller'
-        - $ref: '#/components/parameters/onsale'
-        - $ref: '#/components/parameters/minDiscount'
       responses:
         '200':
           description: قائمة بالمنتجات المطابقة
@@ -73,7 +106,7 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: '#/components/responses/NotFound'        
         '500':
           $ref: '#/components/responses/ServerError'
 
@@ -195,14 +228,14 @@ components:
             $ref: '#/components/schemas/SearchProduct'
 
   parameters:
-    keyword:
-      name: keyword
+    asin:
+      name: asin
       in: path
       required: true
-      description: كلمة البحث الأساسية
+      description: رقم ASIN الفريد للمنتج
       schema:
         type: string
-      example: "phone"
+      example: "B0CTW8TXGH"
 
     domain:
       name: domain
